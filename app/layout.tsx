@@ -1,4 +1,6 @@
-import type { Metadata, Viewport } from "next";
+"use client";
+
+import { useEffect } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -9,34 +11,24 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
-  subsets: ["latin"],
 });
-
-export const metadata: Metadata = {
-  title: "Touchy",
-  description: "Send digital touch and emotions.",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Touchy",
-  },
-};
-
-export const viewport: Viewport = {
-  themeColor: "#000000",
-};
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/worker-push.js")
+        .then((reg) => console.log("SW zarejestrowany:", reg))
+        .catch((err) => console.error("Błąd rejestracji SW:", err));
+    }
+  }, []);
+
   return (
     <html lang="en">
-      <head>
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
-        <meta name="mobile-web-app-capable" content="yes" />
-      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} touch-none antialiased select-none`}
       >
