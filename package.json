@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack && copy worker-push.js public\\worker-push.js",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
