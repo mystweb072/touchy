@@ -9,7 +9,7 @@ const withPWA = withPWAInit({
   aggressiveFrontEndNavCaching: true,
   extendDefaultRuntimeCaching: true,
   workboxOptions: {
-    importScripts: ["/push-sw.js"],
+    importScripts: ["/worker-push.js"],
   },
 });
 
