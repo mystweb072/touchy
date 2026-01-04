@@ -45,7 +45,7 @@ export default function Page({}: Props) {
 
         <div className="pt-24">
           <button
-            onClick={handleNavigation}
+            onClick={() => router.push("/auth/register")}
             disabled={isLoading}
             className="rounded-xl bg-linear-to-tr from-blue-700 to-blue-500 px-12 py-4 text-3xl text-white shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
           >
@@ -53,7 +53,6 @@ export default function Page({}: Props) {
           </button>
         </div>
 
-        {/* Sekcja TEST (opcjonalna, jeśli chcesz mieć szybki dostęp do czatu bez sprawdzania) */}
         <button
           onClick={() => router.push("/chat")}
           className="mt-8 text-sm text-blue-500 opacity-50 transition-opacity hover:opacity-100"
