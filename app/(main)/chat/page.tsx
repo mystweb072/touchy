@@ -33,9 +33,11 @@ export default async function page({}: Props) {
       status: "pending",
     });
 
-  const { data: getUserProfilePicture } = await supabase.storage
+  const avatarPath = getUserProfile?.avatar_url || "user.png";
+
+  const { data: getUserProfilePicture } = supabase.storage
     .from("ProfilePictures")
-    .getPublicUrl(getUserProfile.avatar_url);
+    .getPublicUrl(avatarPath);
 
   const { data: connections } = await supabase
     .from("connections")
