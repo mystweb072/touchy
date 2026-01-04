@@ -465,10 +465,11 @@ const UserSettings = ({
                   <Image src={publicUrl} alt="Avatar" width={96} height={96} />
                 </div>
                 <h3 className="text-2xl font-bold">
-                  {getUserProfile.first_name} {getUserProfile.last_name}
+                  {getUserProfile.first_name || "Użytkownik"}{" "}
+                  {getUserProfile.last_name || ""}
                 </h3>
                 <span className="mt-2 rounded-full bg-slate-100 px-3 py-1 font-mono text-sm text-slate-500">
-                  ID: {getUserProfile.invite_code}
+                  ID: {getUserProfile.invite_code || "Brak kodu"}
                 </span>
               </div>
 
