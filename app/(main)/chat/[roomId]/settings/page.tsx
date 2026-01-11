@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import UnderConstruction from "@/app/(main)/_components/UnderConstruction";
+import NotAuthorized from "@/app/(main)/_components/NotAuthorized";
 
 type Props = {
   params: Promise<{ roomId: string }>;
@@ -10,7 +11,7 @@ export default async function page({ params }: Props) {
   const supabase = await createClient();
   const { data: userAuth } = await supabase.auth.getUser();
   const user = userAuth.user?.id;
-  if (!user) return <div>No user</div>;
+  if (!user) return <NotAuthorized />;
 
   const { data: roomData, error: roomError } = await supabase
     .from("rooms")

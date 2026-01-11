@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import MobileView from "./_components/views/MobileView";
+import NotAuthorized from "../../_components/NotAuthorized";
 
 type Props = {
   params: Promise<{ roomId: string }>;
@@ -11,7 +12,7 @@ export default async function page({ params }: Props) {
 
   const { data: authUser } = await supabase.auth.getUser();
   const user = authUser.user?.id;
-  if (!user) return <div>No user</div>;
+  if (!user) return <NotAuthorized />;
 
   const { data: roomData, error: roomError } = await supabase
     .from("rooms")

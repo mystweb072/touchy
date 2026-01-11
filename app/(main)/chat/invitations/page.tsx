@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import React from "react";
 import Invitations from "./_components/Invitations";
+import NotAuthorized from "../../_components/NotAuthorized";
 
 type Props = {};
 
@@ -8,7 +9,7 @@ export default async function page({}: Props) {
   const supabase = await createClient();
   const { data: getUserAuth } = await supabase.auth.getUser();
   const user = getUserAuth.user?.id;
-  if (!user) return <div>No user</div>;
+  if (!user) return <NotAuthorized />;
 
   const { data: getUserProfile } = await supabase
     .from("profiles")

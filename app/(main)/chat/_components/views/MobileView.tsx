@@ -21,6 +21,7 @@ import { formatDate } from "@/lib/utils";
 import { acceptInvitation, dismissInvitation } from "@/lib/actions";
 import Link from "next/link";
 import { MdKeyboardArrowRight } from "react-icons/md";
+import NotAuthorized from "@/app/(main)/_components/NotAuthorized";
 
 type Props = {
   getUserProfile: {
@@ -250,7 +251,7 @@ const InviteUserModal = () => {
   const handleSendInvitation = async () => {
     const { data: userAuth } = await supabase.auth.getUser();
     const user = userAuth.user?.id;
-    if (!user) return <div>No user</div>;
+    if (!user) return <NotAuthorized />;
 
     const { data: getUserProfile, error: userProfileError } = await supabase
       .from("profiles")
