@@ -20,7 +20,7 @@ export default function NotAuthorized({}: Props) {
 
         <div className="relative z-10 flex h-full flex-col px-8 pt-16 pb-12">
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push("/auth/register")}
             className="flex size-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white backdrop-blur-lg transition-transform active:scale-90"
           >
             <IoChevronBack size={24} />
@@ -59,10 +59,10 @@ export default function NotAuthorized({}: Props) {
             className="w-full"
           >
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push("/auth/register")}
               className="w-full rounded-4xl bg-white py-5 text-lg font-bold text-blue-700 shadow-xl shadow-blue-900/20 transition-all active:scale-95"
             >
-              Go back
+              Login
             </button>
             <p className="mt-6 text-center text-xs font-bold tracking-[0.2em] text-white/30 uppercase">
               Constantly improving for you • v1.0
