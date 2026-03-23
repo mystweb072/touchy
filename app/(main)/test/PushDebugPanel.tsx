@@ -122,6 +122,7 @@ export default function PushDebugPanel() {
         border: "1px solid #ddd",
         borderRadius: 12,
         margin: 16,
+        overflow: "scroll",
       }}
     >
       <h2 style={{ marginBottom: 12 }}>Push / Badge Debug</h2>
