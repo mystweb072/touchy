@@ -3,7 +3,8 @@ import React, { useEffect, useState } from "react";
 import Logo from "./_components/Logo";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import DebugPwaInfo from "../DebugPwaInfo";
+import TestBadgeButton from "./TestBadgeButton";
+import ClearBadgeButton from "./ClearBudgeButton";
 
 type Props = {};
 
@@ -60,7 +61,8 @@ export default function Page({}: Props) {
         >
           Quick Chat Access (Test)
         </button>
-        <DebugPwaInfo />
+        <TestBadgeButton />
+        <ClearBadgeButton />
       </div>
     </div>
   );
