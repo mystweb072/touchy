@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import Logo from "./_components/Logo";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import PushDebugPanel from "./PushDebugPanel";
 
 type Props = {};
 
@@ -60,7 +59,12 @@ export default function Page({}: Props) {
         >
           Quick Chat Access (Test)
         </button>
-        <PushDebugPanel />
+        <button
+          onClick={() => router.push("/test")}
+          className="rounded-xl bg-linear-to-tr from-blue-700 to-blue-500 px-12 py-4 text-3xl text-white shadow-lg transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+        >
+          {isLoading ? "Checking..." : "GTest"}
+        </button>
       </div>
     </div>
   );
