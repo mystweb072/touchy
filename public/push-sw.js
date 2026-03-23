@@ -49,11 +49,11 @@ self.addEventListener("push", (event) => {
   }
 
   const options = {
-    body,
+    body: body || payload.body,
     icon: "/icons/192x192.png",
     image: senderAvatar,
     badge: "/icons/badge-72x72.png",
-    vibrate,
+    vibrate: vibrate,
     tag: reactionType,
     renotify: true,
     data: {
@@ -62,43 +62,27 @@ self.addEventListener("push", (event) => {
   };
 
   event.waitUntil(
-    (async () => {
-      await self.registration.showNotification(title, options);
-
-      if ("setAppBadge" in self.navigator) {
-        await self.navigator.setAppBadge(1);
-      }
-    })(),
+    self.registration.showNotification(title || payload.title, options),
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const urlToOpen = event.notification?.data?.url || "/";
+  const urlToOpen = event.notification.data.url;
 
   event.waitUntil(
-    (async () => {
-      const windowClients = await clients.matchAll({
-        type: "window",
-        includeUncontrolled: true,
-      });
-
-      for (const client of windowClients) {
-        if ("focus" in client) {
-          await client.focus();
-
-          if ("navigate" in client) {
-            await client.navigate(urlToOpen);
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((windowClients) => {
+        for (let client of windowClients) {
+          if (client.url.includes(urlToOpen) && "focus" in client) {
+            return client.focus();
           }
-
-          return;
         }
-      }
-
-      if (clients.openWindow) {
-        await clients.openWindow(urlToOpen);
-      }
-    })(),
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      }),
   );
 });
