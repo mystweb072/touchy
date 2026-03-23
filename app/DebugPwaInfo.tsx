@@ -10,8 +10,13 @@ export default function DebugPwaInfo() {
   });
 
   useEffect(() => {
+    const isStandalone =
+      "standalone" in window.navigator
+        ? String((window.navigator as any).standalone)
+        : "false";
+
     setInfo({
-      standalone: String(window.navigator.standalone),
+      standalone: isStandalone,
       hasBadgeApi: String("setAppBadge" in navigator),
       permission: Notification.permission,
     });
