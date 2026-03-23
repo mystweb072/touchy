@@ -49,11 +49,11 @@ self.addEventListener("push", (event) => {
   }
 
   const options = {
-    body: body || payload.body,
+    body,
     icon: "/icons/192x192.png",
     image: senderAvatar,
     badge: "/icons/badge-72x72.png",
-    vibrate: vibrate,
+    vibrate,
     tag: reactionType,
     renotify: true,
     data: {
@@ -62,27 +62,49 @@ self.addEventListener("push", (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(title || payload.title, options),
+    (async () => {
+      await self.registration.showNotification(title, options);
+
+      const unreadCount = Number(customData.unreadCount ?? 0);
+
+      if ("setAppBadge" in self.navigator) {
+        if (unreadCount > 0) {
+          await self.navigator.setAppBadge(unreadCount);
+        } else if ("clearAppBadge" in self.navigator) {
+          await self.navigator.clearAppBadge();
+        }
+      }
+    })(),
   );
 });
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  const urlToOpen = event.notification.data.url;
+  const urlToOpen = event.notification?.data?.url || "/";
 
   event.waitUntil(
-    clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((windowClients) => {
-        for (let client of windowClients) {
-          if (client.url.includes(urlToOpen) && "focus" in client) {
-            return client.focus();
+    (async () => {
+      const windowClients = await clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+
+      for (const client of windowClients) {
+        if ("focus" in client) {
+          await client.focus();
+
+          if ("navigate" in client) {
+            await client.navigate(urlToOpen);
           }
+
+          return;
         }
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
-        }
-      }),
+      }
+
+      if (clients.openWindow) {
+        await clients.openWindow(urlToOpen);
+      }
+    })(),
   );
 });
