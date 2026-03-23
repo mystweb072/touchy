@@ -65,8 +65,14 @@ self.addEventListener("push", (event) => {
     (async () => {
       await self.registration.showNotification(title, options);
 
+      const unreadCount = Number(customData.unreadCount ?? 0);
+
       if ("setAppBadge" in self.navigator) {
-        await self.navigator.setAppBadge(5);
+        if (unreadCount > 0) {
+          await self.navigator.setAppBadge(unreadCount);
+        } else if ("clearAppBadge" in self.navigator) {
+          await self.navigator.clearAppBadge();
+        }
       }
     })(),
   );
