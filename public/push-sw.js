@@ -1,7 +1,21 @@
+async function debugToClient(data) {
+  const allClients = await clients.matchAll({
+    type: "window",
+    includeUncontrolled: true,
+  });
+
+  for (const client of allClients) {
+    client.postMessage({
+      type: "DEBUG_PUSH",
+      data,
+    });
+  }
+}
+
 self.addEventListener("push", (event) => {
   const payload = event.data ? event.data.json() : {};
+  const customData = payload?.data ?? payload ?? {};
 
-  const customData = payload.data || {};
   const reactionType = customData.type || "default";
   const sender = customData.senderName || "Someone";
   const senderAvatar = customData.senderAvatar;
@@ -63,9 +77,17 @@ self.addEventListener("push", (event) => {
 
   event.waitUntil(
     (async () => {
-      await self.registration.showNotification(title, options);
-
       const unreadCount = Number(customData.unreadCount ?? 0);
+
+      await debugToClient({
+        payload,
+        customData,
+        payloadUnreadCount: payload?.unreadCount,
+        dataUnreadCount: payload?.data?.unreadCount,
+        finalUnreadCount: unreadCount,
+      });
+
+      await self.registration.showNotification(title, options);
 
       if ("setAppBadge" in self.navigator) {
         if (unreadCount > 0) {
