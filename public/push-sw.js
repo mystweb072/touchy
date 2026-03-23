@@ -65,57 +65,8 @@ self.addEventListener("push", (event) => {
     (async () => {
       await self.registration.showNotification(title, options);
 
-      try {
-        const unreadCount = Number(
-          payload.finalUnreadCount ??
-            payload.unreadCount ??
-            customData.unreadCount ??
-            0,
-        );
-
-        console.log("push payload", payload);
-        console.log("unreadCount", unreadCount);
-
-        if ("setAppBadge" in self.navigator) {
-          if (unreadCount > 0) {
-            await self.navigator.setAppBadge(unreadCount);
-          } else if ("clearAppBadge" in self.navigator) {
-            await self.navigator.clearAppBadge();
-          }
-        }
-      } catch (err) {
-        console.error("Badge error:", err);
-      }
-    })(),
-  );
-});
-
-self.addEventListener("notificationclick", (event) => {
-  event.notification.close();
-
-  const urlToOpen = event.notification?.data?.url || "/";
-
-  event.waitUntil(
-    (async () => {
-      const windowClients = await clients.matchAll({
-        type: "window",
-        includeUncontrolled: true,
-      });
-
-      for (const client of windowClients) {
-        if ("focus" in client) {
-          await client.focus();
-
-          if ("navigate" in client) {
-            await client.navigate(urlToOpen);
-          }
-
-          return;
-        }
-      }
-
-      if (clients.openWindow) {
-        await clients.openWindow(urlToOpen);
+      if ("setAppBadge" in self.navigator) {
+        await self.navigator.setAppBadge(1);
       }
     })(),
   );
