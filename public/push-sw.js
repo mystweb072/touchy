@@ -73,6 +73,9 @@ self.addEventListener("push", (event) => {
             0,
         );
 
+        console.log("push payload", payload);
+        console.log("unreadCount", unreadCount);
+
         if ("setAppBadge" in self.navigator) {
           if (unreadCount > 0) {
             await self.navigator.setAppBadge(unreadCount);
