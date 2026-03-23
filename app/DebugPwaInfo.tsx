@@ -4,22 +4,43 @@ import { useEffect, useState } from "react";
 
 export default function DebugPwaInfo() {
   const [info, setInfo] = useState({
-    standalone: "unknown",
-    hasBadgeApi: "unknown",
-    permission: "unknown",
+    standalone: "loading...",
+    hasBadgeApi: "loading...",
+    permission: "loading...",
   });
 
   useEffect(() => {
-    const isStandalone =
-      "standalone" in window.navigator
-        ? String((window.navigator as any).standalone)
-        : "false";
+    try {
+      const iosStandalone =
+        typeof window !== "undefined" &&
+        "standalone" in window.navigator &&
+        Boolean((window.navigator as any).standalone);
 
-    setInfo({
-      standalone: isStandalone,
-      hasBadgeApi: String("setAppBadge" in navigator),
-      permission: Notification.permission,
-    });
+      const displayModeStandalone =
+        typeof window !== "undefined" &&
+        typeof window.matchMedia === "function" &&
+        window.matchMedia("(display-mode: standalone)").matches;
+
+      const hasBadgeApi =
+        typeof navigator !== "undefined" && "setAppBadge" in navigator;
+
+      const permission =
+        typeof Notification !== "undefined"
+          ? Notification.permission
+          : "Notification API unavailable";
+
+      setInfo({
+        standalone: String(iosStandalone || displayModeStandalone),
+        hasBadgeApi: String(hasBadgeApi),
+        permission: String(permission),
+      });
+    } catch (error) {
+      setInfo({
+        standalone: "error",
+        hasBadgeApi: "error",
+        permission: error instanceof Error ? error.message : "unknown error",
+      });
+    }
   }, []);
 
   return (
