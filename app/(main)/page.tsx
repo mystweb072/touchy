@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Logo from "./_components/Logo";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import PushDebugPanel from "./PushDebugPanel";
 
 type Props = {};
 
@@ -59,6 +60,7 @@ export default function Page({}: Props) {
         >
           Quick Chat Access (Test)
         </button>
+        <PushDebugPanel />
       </div>
     </div>
   );
