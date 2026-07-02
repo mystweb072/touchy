@@ -41,6 +41,16 @@ self.addEventListener("push", (event) => {
       body = "I'm really looking forward to being close to you later.";
       vibrate = [800, 200, 800];
       break;
+    case "i_love_you_super":
+      title = `${sender} is deeply in love with you 💎`;
+      body = "I'm really looking forward to being close to you later.";
+      vibrate = [800, 200, 800];
+      break;
+    case "i_miss_you_super":
+      title = `${sender} is longing for you 🧭`;
+      body = "I'm really looking forward to being close to you later.";
+      vibrate = [800, 200, 800];
+      break;
     default:
       title = "New Touch! ✨";
       body = "Someone is thinking of you!";

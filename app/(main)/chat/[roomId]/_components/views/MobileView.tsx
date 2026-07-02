@@ -630,7 +630,7 @@ export default function MobileView({
                               ease: "linear",
                               repeatDelay: 1,
                             }}
-                            className="absolute inset-0 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                            className="absolute inset-0 skew-x-[-20deg] bg-linear-to-r from-transparent via-white/20 to-transparent"
                           />
                         )}
 
