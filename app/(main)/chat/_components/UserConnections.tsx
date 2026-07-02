@@ -25,6 +25,7 @@ export default function UserConnections({
 }: Props) {
   const supabase = createClient();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [latestReaction, setLatestReaction] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUnreadCount = async () => {
@@ -46,6 +47,50 @@ export default function UserConnections({
     };
     fetchUnreadCount();
 
+    const getLatestReaction = async () => {
+      const { data, error } = await supabase
+        .from("reactions")
+        .select("*")
+        .match({
+          room_id: connection.id,
+        })
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) {
+        console.error("Błąd:", error.message);
+        return;
+      }
+
+      if (data) {
+        console.log(data.type);
+        switch (data.type) {
+          case "i_love_you":
+            setLatestReaction("I love you");
+            break;
+          case "kiss_me":
+            setLatestReaction("Kiss me");
+            break;
+          case "i_miss_you":
+            setLatestReaction("I miss you");
+            break;
+          case "you_re_hot":
+            setLatestReaction("You're hot");
+            break;
+          case "thinking_about_you":
+            setLatestReaction("Thinking about you");
+            break;
+          case "i_want_you":
+            setLatestReaction("I want you");
+            break;
+          default:
+            setLatestReaction("Brak reakcji");
+        }
+      }
+    };
+    getLatestReaction();
+
     const channel = supabase
       .channel(`room:notifications:${connection.id}`, {
         config: { broadcast: { self: false } },
@@ -66,29 +111,31 @@ export default function UserConnections({
   }, [connection.id, currentUser]);
 
   return (
-    <Link href={`/chat/${connection.id}`} className="block">
+    <Link href={`/chat/${connection.id}`} className="block w-full">
       <motion.div
-        whileHover={{ x: 5 }}
+        whileHover={{ x: 4 }}
         whileTap={{ scale: 0.98 }}
-        className="flex items-center justify-between rounded-2xl bg-white/10 p-3 text-white transition-colors hover:bg-white/20"
+        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        className="group flex items-center justify-between rounded-xl border border-white/2 bg-white/4 p-3 text-white backdrop-blur-md transition-colors duration-200 hover:bg-white/8"
       >
-        <div className="flex items-center gap-4">
-          <div className="relative shrink-0">
+        <div className="flex min-w-0 items-center gap-3.5">
+          <div className="relative shrink-0 select-none">
             <Image
               src={publicUrl}
               alt={`${connectedUser.first_name} avatar`}
-              width={54}
-              height={54}
-              className="rounded-full border-2 border-white/20 object-cover"
+              width={48}
+              height={48}
+              className="rounded-full border border-white/10 bg-white/5 object-cover"
             />
 
             <AnimatePresence>
               {unreadCount > 0 && (
                 <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                  className="absolute -top-1 -right-1 flex h-6 min-w-6 items-center justify-center rounded-full border-2 border-[#1e40af] bg-red-500 px-1.5 text-sm font-bold text-white shadow-lg"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                  className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-[#1e40af] bg-rose-500 px-1 text-[11px] font-bold text-white shadow-md select-none"
                 >
                   {unreadCount > 9 ? "9+" : unreadCount}
                 </motion.div>
@@ -96,18 +143,20 @@ export default function UserConnections({
             </AnimatePresence>
           </div>
 
-          <div className="flex flex-col">
-            <p className="text-lg leading-tight font-semibold">
+          <div className="flex min-w-0 flex-col">
+            <p className="truncate text-base leading-snug font-semibold tracking-tight text-white/90">
               {connectedUser.first_name} {connectedUser.last_name}
             </p>
-            <span className="text-xs font-medium tracking-tight text-blue-100/60 uppercase">
-              Connected: {formatDate(connection.created_at)}
-            </span>
+            {latestReaction && (
+              <span className="mt-0.5 truncate text-xs font-medium tracking-normal text-white/40 transition-colors duration-200 group-hover:text-white/60">
+                {latestReaction}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="mr-2 text-white/30 transition-colors group-hover:text-white">
-          <IoChevronForward size={20} />
+        <div className="mr-1 shrink-0 transform text-white/15 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-white/60">
+          <IoChevronForward size={18} />
         </div>
       </motion.div>
     </Link>

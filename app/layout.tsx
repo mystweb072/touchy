@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import ServiceWorkerManager from "./(main)/_components/ServiceWorkerManager";
 
@@ -13,6 +13,11 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Touchy",
   description: "Send digital touch and emotions.",
@@ -20,6 +25,9 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Touchy",
+  },
+  icons: {
+    icon: "/icons/512x512.png",
   },
 };
 
@@ -39,7 +47,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} touch-none antialiased select-none`}
+        className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} touch-none antialiased select-none`}
       >
         <ServiceWorkerManager />
         {children}

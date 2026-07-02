@@ -7,11 +7,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { v4 } from "uuid";
-import { REACTIONS } from "../../data/reactions";
+import { REACTIONS, ReactionsType } from "../../data/reactions";
 import { formatSeparatorDate, shouldShowSeparator } from "@/lib/utils";
 import { AnimatePresence, motion } from "motion/react";
 import { FiSend } from "react-icons/fi";
 import { IoMdClose } from "react-icons/io";
+import { SuperOverlayManager } from "../SuperOverlayManager";
 
 type Props = {
   connection: {
@@ -49,6 +50,10 @@ export default function MobileView({
 
   const [reactions, setReactions] = useState<any[]>(reactionsData || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState<"normal" | "super">("normal");
+  const filteredReactions = Object.entries(REACTIONS).filter(([_, data]) =>
+    activeTab === "super" ? data.isSuper : !data.isSuper,
+  );
 
   const connectedUser =
     connection.sender_user_id === authUser?.id
@@ -114,11 +119,23 @@ export default function MobileView({
     };
   }, [roomId]);
 
+  const [activeSuperComponent, setActiveSuperComponent] = useState<{
+    component: string;
+    config?: any;
+  } | null>(null);
+
   const handleSendReaction = async (type: string) => {
     if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
+      const currentReaction = REACTIONS[type as keyof ReactionsType];
+
+      if (currentReaction?.isSuper && currentReaction?.component) {
+        setActiveSuperComponent({ component: currentReaction.component });
+        setIsSubmitting(false);
+      }
+
       const id = v4();
       const reactionObject = {
         id,
@@ -159,6 +176,7 @@ export default function MobileView({
       router.replace(`/chat/${roomId}`, { scroll: false });
     } catch (error) {
       console.error(error);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -208,6 +226,204 @@ export default function MobileView({
             const nextReaction = reactions[index + 1];
             const showTime = shouldShowSeparator(reaction, nextReaction);
 
+            if (config.isSuper) {
+              const getStableRandom = (stringId: string, seed: string) => {
+                let hash = 0;
+                const combinedStr = stringId + seed;
+                for (let i = 0; i < combinedStr.length; i++) {
+                  hash = combinedStr.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                return Math.abs(hash % 1000) / 1000;
+              };
+
+              const MainIcon = config.icon;
+
+              return (
+                <div key={reaction.id} className="flex flex-col">
+                  {showTime && (
+                    <div className="my-6 flex justify-center">
+                      <p className="rounded-full border border-slate-100 bg-slate-50 px-3 py-1 text-[10px] font-black tracking-[0.15rem] text-slate-400 uppercase">
+                        {formatSeparatorDate(reaction.created_at)}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="my-6 flex w-full justify-center px-3">
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.85, y: 20 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 260,
+                        damping: 20,
+                      }}
+                      className="group relative flex w-full max-w-[95%] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-4xl border border-white/10 bg-neutral-950 p-8 text-center text-white shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+                      style={{
+                        boxShadow: `0 20px 40px -15px ${config.color}20, 0 1px 0 0 rgba(255,255,255,0.1) inset`,
+                      }}
+                    >
+                      <motion.div
+                        initial={{ left: "-100%" }}
+                        animate={{ left: "200%" }}
+                        transition={{
+                          repeat: Infinity,
+                          repeatDelay: 3,
+                          duration: 0.8,
+                          ease: "easeInOut",
+                        }}
+                        className="pointer-events-none absolute top-0 z-10 h-full w-1/2 -skew-x-12 bg-linear-to-r from-transparent via-white/15 to-transparent"
+                      />
+
+                      <motion.div
+                        animate={{
+                          scale: [1, 1.15, 1],
+                          opacity: [0.2, 0.35, 0.2],
+                        }}
+                        transition={{
+                          duration: 3.5,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                        className="pointer-events-none absolute z-0 h-64 w-64 rounded-full blur-[80px]"
+                        style={{ backgroundColor: config.color }}
+                      />
+
+                      <motion.div
+                        className="relative z-20 mb-4 flex h-32 w-32 items-center justify-center"
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      >
+                        {[...Array(14)].map((_, i) => {
+                          const seedStartX = getStableRandom(
+                            reaction.id,
+                            `startX-${i}`,
+                          );
+                          const seedStartY = getStableRandom(
+                            reaction.id,
+                            `startY-${i}`,
+                          );
+                          const seedMoveX = getStableRandom(
+                            reaction.id,
+                            `moveX-${i}`,
+                          );
+                          const seedMoveY = getStableRandom(
+                            reaction.id,
+                            `moveY-${i}`,
+                          );
+                          const seedDelay = getStableRandom(
+                            reaction.id,
+                            `delay-${i}`,
+                          );
+                          const seedRepeat = getStableRandom(
+                            reaction.id,
+                            `repeat-${i}`,
+                          );
+                          const seedSize = getStableRandom(
+                            reaction.id,
+                            `size-${i}`,
+                          );
+
+                          const startX = seedStartX * 100 - 50;
+                          const startY = seedStartY * 100 - 50;
+
+                          const moveX = startX + (seedMoveX * 30 - 15);
+                          const moveY = startY - (20 + seedMoveY * 40);
+
+                          const delay = seedDelay * 1.2;
+                          const repeatDelay = 0.5 + seedRepeat * 2;
+                          const dotSize = 3 + seedSize * 5;
+
+                          return (
+                            <motion.div
+                              key={`super-cloud-dot-${reaction.id}-${i}`}
+                              initial={{
+                                x: startX,
+                                y: startY,
+                                opacity: 0,
+                                scale: 0,
+                              }}
+                              animate={{
+                                x: moveX,
+                                y: moveY,
+                                opacity: [0, 1, 1, 0],
+                                scale: [0.5, 1, 0.2],
+                              }}
+                              transition={{
+                                duration: 1.5 + seedMoveY * 1,
+                                repeat: Infinity,
+                                repeatDelay: repeatDelay,
+                                delay: delay,
+                                ease: "easeOut",
+                              }}
+                              className="pointer-events-none absolute rounded-full"
+                              style={{
+                                width: dotSize,
+                                height: dotSize,
+                                backgroundColor: config.color,
+                                boxShadow: `0 0 8px ${config.color}, 0 0 2px #ffffff`,
+                              }}
+                            />
+                          );
+                        })}
+
+                        <div
+                          className="relative z-10 rounded-full border border-white/10 bg-neutral-900/80 p-5 text-white backdrop-blur-xl"
+                          style={{
+                            color: config.color,
+                            filter: `drop-shadow(0 0 25px ${config.color}80) drop-shadow(0 0 60px ${config.color}40)`,
+                          }}
+                        >
+                          <MainIcon
+                            size={44}
+                            className="drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                          />
+                        </div>
+                      </motion.div>
+
+                      <span
+                        className="relative z-20 mb-2 rounded-full border border-white/5 bg-white/5 px-2.5 py-0.5 text-[9px] font-black tracking-[0.3em] uppercase"
+                        style={{ color: config.color }}
+                      >
+                        Super Reaction
+                      </span>
+
+                      <h3 className="relative z-20 mb-1.5 bg-linear-to-b from-white to-neutral-200 bg-clip-text text-3xl leading-none font-black tracking-tight text-transparent">
+                        {typeof config.label === "function"
+                          ? config.label(isMe, connectedUser.first_name)
+                          : config.label}
+                      </h3>
+
+                      {config.subText && (
+                        <p className="relative z-20 mx-auto max-w-[85%] text-xs leading-relaxed font-medium text-neutral-400">
+                          {typeof config.subText === "function"
+                            ? config.subText(isMe)
+                            : config.subText}
+                        </p>
+                      )}
+
+                      <div className="relative z-20 mt-6 flex w-full items-center justify-center gap-2 border-t border-white/5 pt-4 text-[9px] font-bold tracking-widest text-neutral-500 uppercase">
+                        <span
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{ backgroundColor: config.color }}
+                        />
+                        <span>
+                          {isMe
+                            ? "Sent by you"
+                            : `Sent by ${connectedUser.first_name}`}
+                        </span>
+                      </div>
+                    </motion.div>
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <div key={reaction.id} className="flex flex-col-reverse">
                 <div
@@ -234,7 +450,9 @@ export default function MobileView({
                           <config.icon size={24} />
                         </div>
                         <p className="text-md leading-tight font-bold">
-                          {config.label}
+                          {typeof config.label === "function"
+                            ? config.label(isMe, connectedUser.first_name)
+                            : config.label}
                         </p>
                       </div>
                     </motion.div>
@@ -293,27 +511,165 @@ export default function MobileView({
                   <IoMdClose size={24} />
                 </button>
               </div>
-              <div className="grid gap-3">
-                {Object.entries(REACTIONS).map(([key, data]: any) => (
+              <div className="mx-auto mb-12 w-full max-w-md">
+                <div className="relative flex w-full rounded-2xl bg-slate-100 p-1 select-none">
                   <button
-                    key={key}
-                    disabled={isSubmitting}
-                    onClick={() => handleSendReaction(key)}
-                    className={`flex items-center gap-4 rounded-2xl p-4 text-white transition-all ${isSubmitting ? "opacity-40 grayscale" : "active:scale-95"}`}
-                    style={{ backgroundColor: data.bgColor }}
+                    type="button"
+                    onClick={() => setActiveTab("normal")}
+                    className="relative flex-1 cursor-pointer rounded-xl py-2.5 text-sm font-semibold transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20"
                   >
-                    <data.icon size={24} />
-                    <div className="text-left">
-                      <p className="font-bold">{data.label}</p>
-                      <p className="text-xs opacity-80">{data.subText}</p>
-                    </div>
+                    {activeTab === "normal" && (
+                      <motion.div
+                        layoutId="active-tab-pill"
+                        className="absolute inset-0 rounded-xl bg-white shadow-sm"
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 30,
+                        }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 transition-colors duration-200 ${
+                        activeTab === "normal"
+                          ? "text-slate-900"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      Normal
+                    </span>
                   </button>
-                ))}
+
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab("super")}
+                    className="relative flex-1 cursor-pointer rounded-xl py-2.5 text-sm font-semibold transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20"
+                  >
+                    {activeTab === "super" && (
+                      <motion.div
+                        layoutId="active-tab-pill"
+                        className="absolute inset-0 rounded-xl border border-blue-50/50 bg-white shadow-sm"
+                        transition={{
+                          type: "spring",
+                          stiffness: 380,
+                          damping: 30,
+                        }}
+                      />
+                    )}
+                    <span
+                      className={`relative z-10 transition-colors duration-200 ${
+                        activeTab === "super"
+                          ? "text-blue-600"
+                          : "text-slate-500 hover:text-blue-500"
+                      }`}
+                    >
+                      Super
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div key={activeTab} className="relative grid auto-rows-fr gap-3">
+                <AnimatePresence mode="popLayout" initial={false}>
+                  {filteredReactions.map(([key, rawData]: any) => {
+                    // 1. Parsowanie danych - czyścimy funkcje do czystych tekstów
+                    const data = {
+                      ...rawData,
+                      label:
+                        typeof rawData.label === "function"
+                          ? rawData.label(true, connectedUser?.first_name)
+                          : rawData.label,
+                      subText:
+                        typeof rawData.subText === "function"
+                          ? rawData.subText(true)
+                          : rawData.subText,
+                    };
+
+                    const isSuper = data.isSuper;
+
+                    return (
+                      <motion.button
+                        layout="position"
+                        initial={{ opacity: 0, scale: 0.98, y: 10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.98, y: -10 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 30,
+                        }}
+                        whileHover={!isSubmitting ? { scale: 1.01 } : {}}
+                        whileTap={!isSubmitting ? { scale: 0.98 } : {}}
+                        key={key}
+                        disabled={isSubmitting}
+                        onClick={() => handleSendReaction(key)}
+                        className={`relative flex h-20 w-full items-center gap-4 overflow-hidden rounded-2xl p-4 text-white will-change-transform select-none ${
+                          isSubmitting
+                            ? "cursor-not-allowed opacity-50 grayscale"
+                            : "cursor-pointer"
+                        }`}
+                        style={{
+                          // Naprawa: Jeśli to Super, używamy gradientu, jeśli Normal - używamy backgroundColor z data
+                          background: isSuper
+                            ? `linear-gradient(135deg, ${data.bgColor} 0%, color-mix(in srgb, ${data.bgColor}, black 20%) 100%)`
+                            : data.bgColor,
+                          boxShadow: isSuper
+                            ? `0 4px 20px -5px ${data.bgColor}`
+                            : "none",
+                          border: isSuper
+                            ? "1px solid rgba(255,255,255,0.1)"
+                            : "none",
+                        }}
+                      >
+                        {isSuper && (
+                          <motion.div
+                            animate={{ x: ["-100%", "100%"] }}
+                            transition={{
+                              duration: 2.5,
+                              repeat: Infinity,
+                              ease: "linear",
+                              repeatDelay: 1,
+                            }}
+                            className="absolute inset-0 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                          />
+                        )}
+
+                        <div
+                          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${isSuper ? "bg-black/20 backdrop-blur-md" : "bg-white/15"}`}
+                        >
+                          <data.icon size={24} />
+                        </div>
+
+                        <div className="min-w-0 flex-1 overflow-hidden text-left">
+                          <p
+                            className={`w-full truncate text-base leading-snug ${isSuper ? "font-black tracking-wide" : "font-semibold"}`}
+                          >
+                            {data.label}
+                          </p>
+                          {data.subText && (
+                            <p
+                              className={`mt-0.5 w-full truncate text-xs ${isSuper ? "font-medium text-white/70" : "font-medium text-white/80"}`}
+                            >
+                              {data.subText}
+                            </p>
+                          )}
+                        </div>
+                      </motion.button>
+                    );
+                  })}
+                </AnimatePresence>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SuperOverlayManager
+        activeComponent={activeSuperComponent?.component}
+        config={activeSuperComponent?.config}
+        onClose={() => setActiveSuperComponent(null)}
+        connectedUser={connectedUser}
+      />
     </div>
   );
 }

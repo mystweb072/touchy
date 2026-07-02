@@ -43,7 +43,8 @@ export default function ProfileSetup({}: Props) {
           <div>
             <h1 className="text-3xl font-bold">Create your profile</h1>
             <p className="pt-1 text-center text-lg lg:text-left">
-              Lorem ipsum dolor sit amet.
+              To get access to send and receive reactions, please set up your
+              profile
             </p>
           </div>
         </div>

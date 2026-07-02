@@ -10,18 +10,21 @@ export default function OTPInput({ length, onComplete }: Props) {
   const [otp, setOtp] = useState<string[]>(new Array(length).fill(""));
   const inputRef = useRef<HTMLInputElement[]>([]);
 
-  const combinedOtp = otp.join("");
-
   const handleChange = (
     event: ChangeEvent<HTMLInputElement>,
     index: number,
   ) => {
     const value = event.target.value;
+    const cleanValue = value.replace(/[^0-9]/g, "");
 
-    if (value.length > 1) return;
+    if (cleanValue === "" && value != "") {
+      return;
+    }
+
+    if (cleanValue.length > 1) return;
 
     const newOtp = [...otp];
-    newOtp[index] = value;
+    newOtp[index] = cleanValue;
     setOtp(newOtp);
 
     const newCombinedOtp = newOtp.join("");
@@ -29,7 +32,7 @@ export default function OTPInput({ length, onComplete }: Props) {
       onComplete(newCombinedOtp);
     }
 
-    if (value && index < length - 1) {
+    if (cleanValue && index < length - 1) {
       setTimeout(() => {
         const nextInput = inputRef.current[index + 1];
 
@@ -73,13 +76,13 @@ export default function OTPInput({ length, onComplete }: Props) {
             ref={(element) => {
               inputRef.current[index] = element!;
             }}
-            type="numeric"
+            pattern="[0-9]*"
             value={digit}
             onChange={(event) => handleChange(event, index)}
             onKeyDown={(event) => handleKeyDown(event, index)}
             maxLength={1}
             onFocus={() => handleFocus(index)}
-            className={`h-10 w-10 rounded-md border-2 border-[#dedede] text-center text-2xl lg:text-3xl outline-none sm:h-12 sm:w-12 lg:h-18 lg:w-18 ${
+            className={`h-10 w-10 rounded-md border-2 border-[#dedede] text-center text-2xl outline-none sm:h-12 sm:w-12 lg:h-18 lg:w-18 lg:text-3xl ${
               digit.length !== 0 ? "bg-[#e6e6e6]" : ""
             }`}
           />
