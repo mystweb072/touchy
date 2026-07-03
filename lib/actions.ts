@@ -31,12 +31,6 @@ export async function createAccountForUser({
   });
 }
 
-export const logOutUser = async () => {
-  const supabase = await createClient();
-
-  await supabase.auth.signOut();
-};
-
 export const logIn = async ({
   email,
   password,

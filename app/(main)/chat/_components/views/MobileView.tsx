@@ -428,6 +428,19 @@ const UserSettings = ({
   const handleLogOutUser = async () => {
     const supabase = createClient();
 
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+
+      if (subscription) {
+        await supabase
+          .from("push_subscriptions")
+          .delete()
+          .eq("subscription->>endpoint", subscription.endpoint);
+        await subscription.unsubscribe();
+      }
+    }
+
     await supabase.auth.signOut();
     router.push("/");
   };

@@ -110,7 +110,7 @@ export default function SuperIMissYouReaction({
               transition={{ delay: 0.2 }}
               className="mb-2 text-[10px] font-bold tracking-[0.4em] uppercase opacity-70"
             >
-              Miss you message
+              Super reaction
             </motion.p>
 
             <motion.h1
