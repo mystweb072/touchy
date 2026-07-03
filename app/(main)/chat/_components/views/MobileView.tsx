@@ -104,6 +104,34 @@ export default function MobileView({
     }
   };
 
+  const syncPushSubscription = async (userId: string) => {
+    if (!("serviceWorker" in navigator)) return;
+
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+
+    if (!sub) {
+      const convertedVapidKeys = urlBase64ToUint8Array(
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+      );
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKeys,
+      });
+    }
+
+    await supabase.from("push_subscriptions").upsert({
+      user_id: userId,
+      subscription: sub.toJSON(),
+    });
+  };
+
+  useEffect(() => {
+    if (userAuth?.id) {
+      syncPushSubscription(userAuth.id);
+    }
+  }, [userAuth]);
+
   return (
     <div className="relative h-dvh overflow-hidden bg-slate-50 font-sans antialiased">
       <header className="z-50 flex w-full items-center justify-between border-b border-slate-100 bg-white/80 px-6 py-4">
