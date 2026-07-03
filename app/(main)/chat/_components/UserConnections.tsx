@@ -84,6 +84,12 @@ export default function UserConnections({
           case "i_want_you":
             setLatestReaction("I want you");
             break;
+          case "i_love_you_super":
+            setLatestReaction("Deeply in love");
+            break;
+          case "i_love_miss_super":
+            setLatestReaction("Longing for you...");
+            break;
           default:
             setLatestReaction("Brak reakcji");
         }
